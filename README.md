@@ -14,7 +14,7 @@ It's forked, tweaked version of great tool created by xmsec to user gopher to ga
 4. Run ```python3 ssrf-redis.py```
 5. Run ```python3 rogue-server.py```
 6. Don't forget about ```nc -lvnp <port>``` if revshell.
-7. If using revshell option, double send the gopher payload! If other options does not seems work, double send the payload!
+7. If using revshell option, double send the gopher payload! If other options don't seem work, double send the payload!
 
 ## Kudos
 1. https://github.com/xmsec/redis-ssrf
