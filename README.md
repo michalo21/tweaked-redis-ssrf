@@ -1,5 +1,5 @@
 # INFO
-It's forked, tweaked version of great tool created by xmsec to user gopher to gain rce on Redis instances!
+It's forked, tweaked version of great tool created by xmsec to use gopher to gain rce on Redis instances!
 
 # Changelog
 1. Added modified exp.c file to properly compile exp.so library using: https://github.com/n0b0dyCN/redis-rogue-server -> RedisModulesSDK. The modified version has reimplemented RevShellCommand function, to fork the main process and works on it to gain revershell. It prevents to end the main process (Redis) while closing revshell, so it is more gentle with your client's infrastructure while pentesting.
